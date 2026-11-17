@@ -1,0 +1,25 @@
+@startuml
+!include style.iuml
+left to right direction
+skinparam rectangleBorderColor #1f3b5c
+actor "Investigator" as I
+actor "Supervisor" as S
+actor "Auditor" as A
+actor "Administrator" as AD
+actor "Legal team\n(report recipient)" as L
+rectangle "<b>Digital Evidence\n<b>Chain-of-Custody System</b>" as SYS #dbe7f4
+database "Evidence file store\n(read-only files)" as FS
+database "PostgreSQL / SQLite\ndatabase" as DB
+rectangle "System clock /\nscheduler" as CLK
+I --> SYS : login, cases, evidence files,\ntransfer requests, verify
+SYS --> I : SHA-256 hashes, custody history,\ntransfer notices, verify result
+S --> SYS : create/close cases,\nacknowledge alerts
+SYS --> S : dashboard, alerts, reports
+A --> SYS : audit queries, chain check
+SYS --> A : audit log, chain status, PDF reports
+AD --> SYS : user accounts, roles
+SYS --> L : PDF chain-of-custody report
+SYS --> FS : store / read files
+SYS --> DB : cases, evidence, log, transfers, alerts
+CLK --> SYS : timed integrity check
+@enduml

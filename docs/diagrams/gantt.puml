@@ -1,0 +1,26 @@
+@startgantt
+scale 2
+skinparam defaultFontName Arial
+Project starts 2026-09-07
+printscale weekly
+saturday are closed
+sunday are open
+[P1: Research and proposal] starts 2026-09-07 and ends 2026-09-27
+[P1: GitHub repository setup] starts 2026-09-21 and ends 2026-09-27
+[Milestone: Phase 1 due] happens 2026-09-27
+[P2: Elicitation (document + product analysis, scenarios)] starts 2026-09-28 and ends 2026-10-11
+[P2: Requirements, use cases, traceability] starts 2026-10-08 and ends 2026-10-25
+[Milestone: Phase 2 due] happens 2026-10-25
+[P3: Activity + class diagrams] starts 2026-10-26 and ends 2026-11-03
+[P3: Sequence + communication diagrams] starts 2026-11-01 and ends 2026-11-08
+[Milestone: Phase 3 due] happens 2026-11-08
+[P4: Architecture + data design] starts 2026-11-02 and ends 2026-11-12
+[P4: UI mockups] starts 2026-11-06 and ends 2026-11-15
+[Milestone: Phase 4 due] happens 2026-11-15
+[P5: Sprint 1 - auth, cases, upload, hash] starts 2026-10-26 and ends 2026-11-08
+[P5: Sprint 2 - log chain, transfers, verify] starts 2026-11-09 and ends 2026-11-16
+[P5: Sprint 3 - alerts, PDF, tests] starts 2026-11-15 and ends 2026-11-21
+[Final report + slides] starts 2026-11-16 and ends 2026-11-22
+[Milestone: Phase 5 + report due] happens 2026-11-22
+[Live demo] starts 2026-11-23 and ends 2026-11-25
+@endgantt

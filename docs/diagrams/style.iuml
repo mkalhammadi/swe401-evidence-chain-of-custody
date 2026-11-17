@@ -1,0 +1,15 @@
+skinparam dpi 170
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #1f3b5c
+skinparam ActorBorderColor #1f3b5c
+skinparam UsecaseBorderColor #1f3b5c
+skinparam UsecaseBackgroundColor #eef3f9
+skinparam ClassBorderColor #1f3b5c
+skinparam ClassBackgroundColor #f7f9fc
+skinparam ActivityBorderColor #1f3b5c
+skinparam ActivityBackgroundColor #eef3f9
+skinparam ParticipantBorderColor #1f3b5c
+skinparam ParticipantBackgroundColor #eef3f9
+skinparam NoteBackgroundColor #fff8dc
