@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ item.evidence_code }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+  <a class="small" href="{{ url_for('cases.case_detail', case_id=item.case.id) }}">&larr; {{ item.case.case_number }}</a>
+  <h1 class="h4 mb-0">{{ item.evidence_code }} · {{ item.original_filename }}</h1>
+</div>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card p-3 mb-3">
+      <table class="table table-sm mb-2">
+        <tr><th style="width:32%">Integrity status</th><td><span class="badge badge-{{ item.integrity_status }}">{{ item.integrity_status }}</span>
+          <span class="text-muted small">last checked {{ item.last_verified_at|dt }}</span></td></tr>
+        <tr><th>Original SHA-256</th><td class="hash">{{ item.sha256 }}</td></tr>
+        <tr><th>Size</th><td>{{ item.size_bytes|size }} ({{ "{:,}".format(item.size_bytes) }} bytes)</td></tr>
+        <tr><th>Type</th><td>{{ item.mime_type }}</td></tr>
+        <tr><th>Uploaded</th><td>{{ item.created_at|dt }} by {{ item.uploaded_by.full_name }}</td></tr>
+        <tr><th>Current custodian</th><td>{{ item.custodian.full_name }}
+          {% if item.pending_transfer %}<span class="badge bg-warning text-dark">Transfer pending to {{ item.pending_transfer.to_user.full_name }}</span>{% endif %}</td></tr>
+        <tr><th>Description</th><td>{{ item.description or '-' }}</td></tr>
+      </table>
+      <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{{ url_for('evidence.verify', evidence_id=item.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-success btn-sm">Verify integrity</button></form>
+        {% if current_user.role != 'Auditor' %}
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('evidence.download', evidence_id=item.id) }}">Download</a>{% endif %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('evidence.report', evidence_id=item.id) }}">Export PDF report</a>
+      </div>
+    </div>
+    {% if can_transfer %}
+    <div class="card p-3">
+      <h2 class="h6">Transfer custody</h2>
+      <form method="post" action="{{ url_for('transfers.create', evidence_id=item.id) }}" class="row g-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-5"><select class="form-select form-select-sm" name="to_user_id" required>
+          <option value="">Receiving user…</option>
+          {% for u in receivers %}<option value="{{ u.id }}">{{ u.full_name }} ({{ u.role }})</option>{% endfor %}
+        </select></div>
+        <div class="col-md-5"><input class="form-control form-control-sm" name="reason" placeholder="Reason for transfer" required></div>
+        <div class="col-md-2"><button class="btn btn-warning btn-sm w-100">Request</button></div>
+      </form>
+      <p class="text-muted small mt-2 mb-0">Custody only changes after the receiver accepts.</p>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-lg-5">
+    <div class="card p-3">
+      <h2 class="h6 mb-3">Chain-of-custody history</h2>
+      <div class="timeline">
+      {% for ev in history %}
+        <div class="item {{ 'fail' if ev.action == 'VERIFY_FAILED' else ('ok' if ev.action in ['VERIFY_PASSED','UPLOAD','TRANSFER_ACCEPTED'] else '') }}">
+          <div><strong>{{ ev.action.replace('_',' ').title() }}</strong> · {{ ev.user.full_name if ev.user else 'System' }}</div>
+          <div class="text-muted small">{{ ev.timestamp|dt }} UTC · entry {{ ev.entry_hash[:12] }}…</div>
+          {% if ev.details %}<div class="small text-break">{{ ev.details[:140] }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

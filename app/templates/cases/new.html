@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}New case{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Create a new case</h1>
+<div class="card p-4" style="max-width: 720px">
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3"><label class="form-label" for="title">Case title *</label>
+    <input class="form-control" id="title" name="title" required maxlength="200"></div>
+  <div class="mb-3"><label class="form-label" for="description">Description</label>
+    <textarea class="form-control" id="description" name="description" rows="4"></textarea></div>
+  {% if current_user.role != 'Investigator' %}
+  <div class="mb-3"><label class="form-label" for="lead">Lead investigator</label>
+    <select class="form-select" id="lead" name="lead_investigator_id">
+      {% for u in investigators %}<option value="{{ u.id }}">{{ u.full_name }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <p class="text-muted small">A case number (CASE-YYYY-NNNN) is assigned automatically.</p>
+  <button class="btn btn-primary">Create case</button>
+  <a class="btn btn-link" href="{{ url_for('cases.list_cases') }}">Cancel</a>
+</form>
+</div>
+{% endblock %}

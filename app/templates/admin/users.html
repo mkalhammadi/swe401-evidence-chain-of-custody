@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">User and role management</h1>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+    <table class="table table-sm mb-0 align-middle">
+      <thead class="table-light"><tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td><td>{{ u.full_name }}</td><td class="small">{{ u.email }}</td>
+        <td><select form="u{{ u.id }}" class="form-select form-select-sm" name="role">{% for r in roles %}<option {% if r == u.role %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></td>
+        <td><select form="u{{ u.id }}" class="form-select form-select-sm" name="active"><option value="1" {% if u.active %}selected{% endif %}>Yes</option><option value="0" {% if not u.active %}selected{% endif %}>No</option></select></td>
+        <td><form id="u{{ u.id }}" method="post" action="{{ url_for('admin.update_user', user_id=u.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline-primary btn-sm">Save</button></form></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-3">
+      <h2 class="h6">Add user</h2>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input class="form-control form-control-sm mb-2" name="username" placeholder="Username" required>
+        <input class="form-control form-control-sm mb-2" name="full_name" placeholder="Full name" required>
+        <input class="form-control form-control-sm mb-2" name="email" type="email" placeholder="Email" required>
+        <input class="form-control form-control-sm mb-2" name="password" type="password" placeholder="Temporary password (10+ chars)" required>
+        <select class="form-select form-select-sm mb-2" name="role">{% for r in roles %}<option>{{ r }}</option>{% endfor %}</select>
+        <button class="btn btn-primary btn-sm w-100">Create user</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

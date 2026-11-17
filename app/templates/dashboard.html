@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Dashboard</h1>
+<div class="row g-3 mb-4">
+  {% for key, label in [('open_cases','Open cases'),('evidence','Evidence items'),('my_custody','In my custody'),
+                        ('pending_in','Transfers awaiting me'),('open_alerts','Open alerts'),('mismatch','Integrity problems')] %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card stat-card p-3 h-100">
+      <div class="value {% if key in ['open_alerts','mismatch'] and stats[key] %}text-danger{% endif %}">{{ stats[key] }}</div>
+      <div class="label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card p-3 h-100">
+      <h2 class="h6">Custody activity – last 7 days</h2>
+      <div class="bar-chart mt-3">
+        {% for d in chart %}<div class="bar" style="height: {{ (d.count / peak * 100)|round(0) }}%"><span>{{ d.count }}</span></div>{% endfor %}
+      </div>
+      <div class="bar-labels mt-1">{% for d in chart %}<div>{{ d.label }}</div>{% endfor %}</div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card p-3 h-100">
+      <h2 class="h6">Recent activity</h2>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Time (UTC)</th><th>User</th><th>Action</th><th>Evidence / Case</th></tr></thead>
+        <tbody>
+        {% for ev in recent %}
+          <tr><td>{{ ev.timestamp|dt }}</td><td>{{ ev.user.full_name if ev.user else 'System' }}</td>
+              <td><span class="badge bg-secondary">{{ ev.action }}</span></td>
+              <td>{{ ev.evidence.evidence_code if ev.evidence else (ev.case.case_number if ev.case else '-') }}</td></tr>
+        {% else %}<tr><td colspan="4" class="text-muted">No activity yet.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

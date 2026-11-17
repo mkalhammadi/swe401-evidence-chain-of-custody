@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+  <h1 class="h4 mb-0 me-auto">Unusual-activity alerts</h1>
+  <div class="btn-group btn-group-sm">
+    <a class="btn btn-outline-secondary {% if show == 'open' %}active{% endif %}" href="?show=open">Open</a>
+    <a class="btn btn-outline-secondary {% if show == 'all' %}active{% endif %}" href="?show=all">All</a>
+  </div>
+</div>
+<p class="text-muted small">Alerts are warnings only. A supervisor reviews each one before any action is taken.</p>
+<div class="card">
+<table class="table table-sm mb-0 align-middle">
+  <thead class="table-light"><tr><th>Raised (UTC)</th><th>Severity</th><th>Rule</th><th>Message</th><th>User</th><th>Evidence</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for a in alerts %}
+    <tr><td>{{ a.created_at|dt }}</td><td><span class="badge badge-{{ a.severity }}">{{ a.severity }}</span></td>
+        <td><code>{{ a.rule }}</code></td><td class="small">{{ a.message }}</td>
+        <td>{{ a.user.full_name if a.user else '-' }}</td>
+        <td>{% if a.evidence %}<a href="{{ url_for('evidence.detail', evidence_id=a.evidence.id) }}">{{ a.evidence.evidence_code }}</a>{% else %}-{% endif %}</td>
+        <td>{% if a.acknowledged_at %}<span class="small text-muted">Ack by {{ a.acknowledged_by.full_name }}</span>
+            {% elif current_user.role in ['Admin','Supervisor'] %}
+            <form method="post" action="{{ url_for('main.ack_alert', alert_id=a.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-primary btn-sm">Acknowledge</button></form>{% else %}Open{% endif %}</td></tr>
+  {% else %}<tr><td colspan="7" class="text-muted p-3">No alerts.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /home/claude/evidence-coc
+configfile: pytest.ini
+testpaths: tests
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 24 items
+
+tests/test_system.py::test_tc01_valid_login_redirects_to_dashboard PASSED [  4%]
+tests/test_system.py::test_tc02_invalid_login_rejected_and_logged PASSED [  8%]
+tests/test_system.py::test_tc03_account_locks_after_five_failures PASSED [ 12%]
+tests/test_system.py::test_tc04_role_access_control PASSED               [ 16%]
+tests/test_system.py::test_tc05_create_case_assigns_number PASSED        [ 20%]
+tests/test_system.py::test_tc06_close_case_blocks_new_uploads PASSED     [ 25%]
+tests/test_system.py::test_tc07_upload_stores_correct_sha256 PASSED      [ 29%]
+tests/test_system.py::test_tc08_empty_file_rejected PASSED               [ 33%]
+tests/test_system.py::test_tc09_streaming_hash_matches_hashlib_for_large_input PASSED [ 37%]
+tests/test_system.py::test_tc10_view_and_download_are_logged PASSED      [ 41%]
+tests/test_system.py::test_tc11_verify_passes_for_unchanged_file PASSED  [ 45%]
+tests/test_system.py::test_tc12_verify_detects_tampering_and_alerts PASSED [ 50%]
+tests/test_system.py::test_tc13_scheduled_check_covers_all_items PASSED  [ 54%]
+tests/test_system.py::test_tc14_custody_changes_only_after_acceptance PASSED [ 58%]
+tests/test_system.py::test_tc15_rejected_transfer_keeps_custodian PASSED [ 62%]
+tests/test_system.py::test_tc16_only_receiver_can_accept PASSED          [ 66%]
+tests/test_system.py::test_tc17_audit_chain_valid_then_detects_edit PASSED [ 70%]
+tests/test_system.py::test_tc18_audit_chain_detects_deleted_entry PASSED [ 75%]
+tests/test_system.py::test_tc19_bulk_download_raises_alert PASSED        [ 79%]
+tests/test_system.py::test_tc20_after_hours_access_raises_alert PASSED   [ 83%]
+tests/test_system.py::test_tc21_pdf_custody_report PASSED                [ 87%]
+tests/test_system.py::test_tc22_auditor_cannot_download_content PASSED   [ 91%]
+tests/test_system.py::test_tc23_hash_throughput_50mb_under_5s PASSED     [ 95%]
+tests/test_system.py::test_tc24_passwords_are_hashed PASSED              [100%]
+
+============================= 24 passed in 10.11s ==============================

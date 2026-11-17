@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-3">
+  <h1 class="h4 mb-0 me-auto">Audit log (hash-chained)</h1>
+  <form method="post" action="{{ url_for('main.audit_verify') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-success btn-sm">Verify whole chain</button>
+  </form>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-4"><select class="form-select form-select-sm" name="action">
+    <option value="">All actions</option>
+    {% for a in actions %}<option {% if a == action %}selected{% endif %}>{{ a }}</option>{% endfor %}
+  </select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary btn-sm w-100">Filter</button></div>
+</form>
+<div class="card">
+<table class="table table-sm mb-0">
+  <thead class="table-light"><tr><th>#</th><th>Time (UTC)</th><th>User</th><th>Action</th><th>Evidence / Case</th><th>IP</th><th>Previous hash</th><th>Entry hash</th></tr></thead>
+  <tbody>
+  {% for ev in page.items %}
+    <tr><td>{{ ev.id }}</td><td>{{ ev.timestamp|dt }}</td><td>{{ ev.user.full_name if ev.user else 'System' }}</td>
+        <td><span class="badge bg-secondary">{{ ev.action }}</span></td>
+        <td>{{ ev.evidence.evidence_code if ev.evidence else (ev.case.case_number if ev.case else '-') }}</td>
+        <td class="small">{{ ev.ip_address }}</td>
+        <td class="hash">{{ ev.prev_hash[:12] }}…</td><td class="hash">{{ ev.entry_hash[:12] }}…</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<div class="mt-2 small">
+  Page {{ page.page }} of {{ page.pages or 1 }}
+  {% if page.has_prev %}<a href="?page={{ page.prev_num }}&action={{ action }}">&larr; Newer</a>{% endif %}
+  {% if page.has_next %}<a href="?page={{ page.next_num }}&action={{ action }}">Older &rarr;</a>{% endif %}
+</div>
+{% endblock %}

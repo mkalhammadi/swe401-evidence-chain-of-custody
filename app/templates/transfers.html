@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Transfers{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Custody transfers</h1>
+<div class="card mb-4">
+  <div class="card-header bg-white"><strong>Incoming</strong> – evidence other users want to hand to you</div>
+  <table class="table table-sm mb-0 align-middle">
+    <thead class="table-light"><tr><th>Evidence</th><th>From</th><th>Reason</th><th>Requested</th><th>Status</th><th style="width:34%">Action</th></tr></thead>
+    <tbody>
+    {% for t in incoming %}
+      <tr><td><a href="{{ url_for('evidence.detail', evidence_id=t.evidence.id) }}">{{ t.evidence.evidence_code }}</a></td>
+          <td>{{ t.from_user.full_name }}</td><td>{{ t.reason }}</td><td>{{ t.requested_at|dt }}</td>
+          <td><span class="badge bg-{{ {'Pending':'warning text-dark','Accepted':'success','Rejected':'danger','Cancelled':'secondary'}[t.status] }}">{{ t.status }}</span></td>
+          <td>{% if t.status == 'Pending' %}
+            <form method="post" action="{{ url_for('transfers.respond', transfer_id=t.id) }}" class="d-flex gap-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input class="form-control form-control-sm" name="note" placeholder="Note (optional)">
+              <button class="btn btn-success btn-sm" name="decision" value="accept">Accept</button>
+              <button class="btn btn-outline-danger btn-sm" name="decision" value="reject">Reject</button>
+            </form>{% else %}<span class="small text-muted">{{ t.response_note or '' }}</span>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="6" class="text-muted p-3">No incoming transfers.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <div class="card-header bg-white"><strong>Outgoing</strong> – transfers you requested</div>
+  <table class="table table-sm mb-0 align-middle">
+    <thead class="table-light"><tr><th>Evidence</th><th>To</th><th>Reason</th><th>Requested</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for t in outgoing %}
+      <tr><td>{{ t.evidence.evidence_code }}</td><td>{{ t.to_user.full_name }}</td><td>{{ t.reason }}</td><td>{{ t.requested_at|dt }}</td>
+          <td><span class="badge bg-{{ {'Pending':'warning text-dark','Accepted':'success','Rejected':'danger','Cancelled':'secondary'}[t.status] }}">{{ t.status }}</span></td>
+          <td>{% if t.status == 'Pending' %}<form method="post" action="{{ url_for('transfers.cancel', transfer_id=t.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-link btn-sm p-0">Cancel</button></form>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="6" class="text-muted p-3">No outgoing transfers.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
