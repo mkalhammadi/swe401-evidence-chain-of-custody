@@ -1,0 +1,25 @@
+@startuml
+!include style.iuml
+title Activity Diagram 4 - Log In with Lockout
+start
+:Enter username and password;
+if (Account locked?) then (yes)
+  :Show "account locked";
+  stop
+endif
+if (Password correct and account active?) then (yes)
+  :Reset failed count;
+  :Start session (30 min idle timeout);
+  :Log LOGIN;
+  :Open dashboard;
+else (no)
+  :Increase failed count;
+  :Log LOGIN_FAILED;
+  if (Failed count >= 5?) then (yes)
+    :Lock account 15 minutes;
+    :Raise REPEATED_LOGIN_FAILURE alert;
+  endif
+  :Show "Invalid username or password";
+endif
+stop
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+!include style.iuml
+title Activity Diagram 1 - Upload Evidence
+|Investigator|
+start
+:Open case page;
+:Choose file and enter description;
+:Click "Upload and hash";
+|System|
+if (User logged in and allowed to upload to this case?) then (no)
+  :Show "403 Forbidden";
+  stop
+endif
+if (Case status = Open?) then (no)
+  :Show "Case is closed";
+  stop
+endif
+if (File chosen and not empty?) then (no)
+  :Show validation error;
+  |Investigator|
+  :Choose a valid file;
+  stop
+endif
+|System|
+:Read file in 64 KB chunks;
+fork
+  :Write chunk to evidence store;
+fork again
+  :Update SHA-256 digest;
+end fork
+:Set stored file read-only;
+:Create Evidence record\n(code, size, SHA-256, custodian);
+:Append UPLOAD event to hash-chained log;
+:Run anomaly rules on event;
+|Investigator|
+:See evidence page with SHA-256 hash;
+stop
+@enduml

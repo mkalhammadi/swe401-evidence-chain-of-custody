@@ -1,0 +1,33 @@
+@startuml
+!include style.iuml
+autonumber
+title Sequence Diagram 2 - Transfer and Accept Custody
+actor Sender
+actor Receiver
+boundary ":TransferInbox" as V
+control ":TransferService" as TS
+control ":AuditService" as AS
+entity ":Transfer" as T
+entity ":Evidence" as E
+Sender -> V : request(evId, toUser, reason)
+V -> TS : requestTransfer(ev, sender, toId, reason)
+TS -> E : check custodian / pendingTransfer()
+E --> TS : ok
+TS -> T ** : new Transfer(status=Pending)
+TS -> AS : logEvent(TRANSFER_REQUESTED)
+TS --> V : Transfer
+V --> Sender : "custody changes when receiver accepts"
+... later ...
+Receiver -> V : respond(tId, accept, note)
+V -> TS : respond(t, receiver, true, note)
+alt receiver is t.toUser and status = Pending
+  TS -> T : status = Accepted
+  TS -> E : custodian = receiver
+  TS -> AS : logEvent(TRANSFER_ACCEPTED)
+  TS --> V : ok
+  V --> Receiver : "you are now the custodian"
+else not allowed
+  TS --> V : TransferError
+  V --> Receiver : error message
+end
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+!include style.iuml
+title Communication Diagram - Accept Custody Transfer
+left to right direction
+skinparam rectangleBorderColor #1f3b5c
+skinparam rectangleBackgroundColor #eef3f9
+actor Receiver
+rectangle ":TransferInbox" as V
+rectangle ":TransferService" as TS
+rectangle ":Transfer" as T
+rectangle ":Evidence" as E
+rectangle ":AuditService" as AS
+rectangle ":CustodyEvent" as CE
+Receiver -- V : "1: respond(tId, accept)"
+V -- TS : "2: respond(t, user, true)"
+TS -- T : "3: status = Accepted"
+TS -- E : "4: custodian = receiver"
+TS -- AS : "5: logEvent(TRANSFER_ACCEPTED)"
+AS -- CE : "5.1: create(prevHash, entryHash)"
+@enduml

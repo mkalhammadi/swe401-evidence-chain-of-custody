@@ -1,0 +1,33 @@
+@startuml
+!include style.iuml
+title Activity Diagram 2 - Transfer Custody
+|Sender (custodian)|
+start
+:Open evidence page;
+:Select receiver and enter reason;
+:Click "Request";
+|System|
+if (Sender is current custodian,\nno pending transfer, case open?) then (no)
+  :Show error message;
+  stop
+endif
+:Create Transfer (status = Pending);
+:Log TRANSFER_REQUESTED;
+|Receiver|
+:Open Transfers inbox;
+:Review evidence and reason;
+if (Accept?) then (yes)
+  |System|
+  :Set status = Accepted;
+  :Change custodian to receiver;
+  :Log TRANSFER_ACCEPTED;
+else (no)
+  |System|
+  :Set status = Rejected;
+  :Custodian stays the sender;
+  :Log TRANSFER_REJECTED;
+endif
+|Sender (custodian)|
+:Sees outcome in Outgoing list;
+stop
+@enduml

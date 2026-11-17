@@ -1,0 +1,173 @@
+@startuml
+!include style.iuml
+skinparam dpi 130
+top to bottom direction
+skinparam nodesep 40
+skinparam ranksep 50
+hide empty members
+
+package "Boundary" #f0f4fa {
+  class LoginPage <<boundary>> {
+    +submit(username, password)
+  }
+  class CaseView <<boundary>> {
+    +listCases(filter)
+    +showCase(id)
+    +createCase(form)
+  }
+  class EvidenceView <<boundary>> {
+    +upload(file, desc)
+    +showEvidence(id)
+    +download(id)
+    +verify(id)
+    +exportReport(id)
+  }
+  class TransferInbox <<boundary>> {
+    +request(evId, toUser, reason)
+    +respond(tId, decision, note)
+  }
+  class AuditView <<boundary>> {
+    +showLog(filter)
+    +verifyChain()
+  }
+  class AdminView <<boundary>> {
+    +createUser(form)
+    +updateUser(id, role, active)
+  }
+}
+
+package "Control" #fdf6ec {
+  class AuthController <<control>> {
+    +login(u, p): User
+    +logout(u)
+    -lockAccount(u)
+  }
+  class EvidenceService <<control>> {
+    +storeEvidence(case, file, desc, user): Evidence
+    +canView(user, ev): bool
+    +canUpload(user, case): bool
+  }
+  class HashService <<control>> {
+    +sha256Stream(stream, chunk): (hash, size)
+    +sha256File(path): String
+  }
+  class AuditService <<control>> {
+    +logEvent(action, user, ev, case, details): CustodyEvent
+    +verifyChain(): (ok, count, brokenId)
+  }
+  class TransferService <<control>> {
+    +requestTransfer(ev, from, toId, reason): Transfer
+    +respond(t, user, accept, note)
+    +cancel(t, user)
+  }
+  class IntegrityService <<control>> {
+    +verifyEvidence(ev, user): (ok, hash)
+    +verifyAll(): Summary
+    +startScheduler(app)
+  }
+  class AnomalyService <<control>> {
+    +evaluateEvent(ev)
+    +raiseAlert(rule, severity, msg)
+  }
+  class ReportService <<control>> {
+    +buildCustodyReport(ev, user): PDF
+  }
+}
+
+package "Entity" #eef7ee {
+  class User <<entity>> {
+    -id: int
+    -username: String
+    -fullName: String
+    -email: String
+    -passwordHash: String
+    -role: String
+    -active: bool
+    -failedLogins: int
+    -lockedUntil: DateTime
+    +setPassword(raw)
+    +checkPassword(raw): bool
+  }
+  class Investigator <<entity>>
+  class Supervisor <<entity>>
+  class Auditor <<entity>>
+  class Administrator <<entity>>
+  class Case <<entity>> {
+    -id: int
+    -caseNumber: String
+    -title: String
+    -status: Open|Closed
+    -createdAt: DateTime
+    -closedAt: DateTime
+    +close()
+  }
+  class Evidence <<entity>> {
+    -id: int
+    -evidenceCode: String
+    -originalFilename: String
+    -storedFilename: String
+    -sizeBytes: long
+    -sha256: String
+    -integrityStatus: String
+    -lastVerifiedAt: DateTime
+    +pendingTransfer(): Transfer
+  }
+  class CustodyEvent <<entity>> {
+    -id: int
+    -timestamp: DateTime
+    -action: String
+    -details: String
+    -ipAddress: String
+    -prevHash: String
+    -entryHash: String
+  }
+  class Transfer <<entity>> {
+    -id: int
+    -reason: String
+    -status: String
+    -requestedAt: DateTime
+    -respondedAt: DateTime
+  }
+  class Alert <<entity>> {
+    -id: int
+    -rule: String
+    -severity: String
+    -message: String
+    -acknowledgedAt: DateTime
+  }
+}
+
+User <|-- Investigator
+User <|-- Supervisor
+User <|-- Auditor
+User <|-- Administrator
+
+User "1" -- "0..*" Case : leads >
+Case "1" *-- "0..*" Evidence : contains >
+User "1" -- "0..*" Evidence : custodian of >
+Evidence "1" o-- "0..*" Transfer : has >
+User "1" -- "0..*" Transfer : sends / receives >
+Evidence "0..1" -- "0..*" CustodyEvent : recorded in >
+User "0..1" -- "0..*" CustodyEvent : performs >
+CustodyEvent "1" -- "0..1" CustodyEvent : prevHash links to >
+Alert "0..*" -- "0..1" Evidence : about >
+
+LoginPage ..> AuthController
+CaseView ..> EvidenceService
+EvidenceView ..> EvidenceService
+EvidenceView ..> IntegrityService
+EvidenceView ..> ReportService
+TransferInbox ..> TransferService
+AuditView ..> AuditService
+AdminView ..> AuditService
+EvidenceService ..> HashService
+IntegrityService ..> HashService
+EvidenceService ..> AuditService
+TransferService ..> AuditService
+IntegrityService ..> AuditService
+AuthController ..> AuditService
+AuditService ..> AnomalyService
+AnomalyService ..> Alert
+HashService -[hidden]down-> Evidence
+AuditService -[hidden]down-> CustodyEvent
+@enduml

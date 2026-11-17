@@ -1,0 +1,31 @@
+@startuml
+!include style.iuml
+title Activity Diagram 3 - Verify Evidence Integrity (manual or scheduled)
+start
+if (Trigger?) then (user clicks "Verify integrity")
+  :Load selected evidence item;
+else (scheduler timer fires)
+  :Load all evidence items;
+endif
+repeat
+  if (Stored file exists?) then (no)
+    :Status = Missing;
+    :Log VERIFY_FAILED;
+    :Raise HIGH alert;
+  else (yes)
+    :Re-compute SHA-256 in 64 KB chunks;
+    if (Current hash = original hash?) then (yes)
+      :Status = Verified;
+      :Log VERIFY_PASSED;
+    else (no)
+      :Status = Mismatch;
+      :Log VERIFY_FAILED\n(expected vs found);
+      :Raise HIGH INTEGRITY_FAILURE alert;
+    endif
+  endif
+  :Update last_verified_at;
+repeat while (More items?) is (yes)
+->no;
+:Show result / write summary;
+stop
+@enduml

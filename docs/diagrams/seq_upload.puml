@@ -1,0 +1,32 @@
+@startuml
+!include style.iuml
+autonumber
+title Sequence Diagram 1 - Upload Evidence
+actor Investigator
+boundary ":EvidenceView" as V
+control ":EvidenceService" as ES
+control ":HashService" as HS
+control ":AuditService" as AS
+control ":AnomalyService" as AN
+entity ":Evidence" as E
+database "FileStore" as FS
+Investigator -> V : upload(file, description)
+V -> ES : canUpload(user, case)
+ES --> V : true
+V -> ES : storeEvidence(case, file, desc, user)
+ES -> HS : sha256Stream(file, 64KB, sink)
+loop each 64 KB chunk
+  HS -> FS : write(chunk)
+  HS -> HS : digest.update(chunk)
+end
+HS --> ES : (sha256, size)
+ES -> FS : chmod(read-only)
+ES -> E ** : new Evidence(code, sha256, size, custodian)
+ES -> AS : logEvent(UPLOAD, user, evidence, details)
+AS -> AS : prev = lastEntry.entryHash\nentryHash = SHA256(prev|data)
+AS -> AN : evaluateEvent(event)
+AN --> AS
+AS --> ES : CustodyEvent
+ES --> V : Evidence
+V --> Investigator : evidence page with SHA-256
+@enduml

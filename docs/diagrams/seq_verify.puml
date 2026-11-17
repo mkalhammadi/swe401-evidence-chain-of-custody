@@ -1,0 +1,31 @@
+@startuml
+!include style.iuml
+autonumber
+title Sequence Diagram 3 - Verify Evidence Integrity
+actor User
+boundary ":EvidenceView" as V
+control ":IntegrityService" as IS
+control ":HashService" as HS
+control ":AuditService" as AS
+control ":AnomalyService" as AN
+entity ":Evidence" as E
+entity ":Alert" as AL
+User -> V : verify(evidenceId)
+V -> IS : verifyEvidence(ev, user)
+IS -> HS : sha256File(path)
+HS --> IS : currentHash
+IS -> E : compare(currentHash, sha256)
+alt hashes match
+  IS -> E : integrityStatus = Verified
+  IS -> AS : logEvent(VERIFY_PASSED)
+  IS --> V : (true, hash)
+  V --> User : "Integrity verified"
+else mismatch
+  IS -> E : integrityStatus = Mismatch
+  IS -> AS : logEvent(VERIFY_FAILED, expected, found)
+  AS -> AN : evaluateEvent(event)
+  AN -> AL ** : new Alert(INTEGRITY_FAILURE, High)
+  IS --> V : (false, hash)
+  V --> User : "INTEGRITY FAILURE - alert raised"
+end
+@enduml
