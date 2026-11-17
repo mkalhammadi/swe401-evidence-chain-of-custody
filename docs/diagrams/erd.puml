@@ -1,0 +1,93 @@
+@startuml
+!include style.iuml
+hide circle
+skinparam linetype ortho
+entity users {
+  * **id** : INTEGER <<PK>>
+  --
+  * username : VARCHAR(50) <<UNIQUE>>
+  * full_name : VARCHAR(120)
+  * email : VARCHAR(120) <<UNIQUE>>
+  * password_hash : VARCHAR(255)
+  * role : VARCHAR(20)
+  * active : BOOLEAN
+  * failed_logins : INTEGER
+  locked_until : TIMESTAMP
+  * created_at : TIMESTAMP
+}
+entity cases {
+  * **id** : INTEGER <<PK>>
+  --
+  * case_number : VARCHAR(30) <<UNIQUE>>
+  * title : VARCHAR(200)
+  description : TEXT
+  * status : VARCHAR(20)
+  * lead_investigator_id : INTEGER <<FK>>
+  * created_by_id : INTEGER <<FK>>
+  * created_at : TIMESTAMP
+  closed_at : TIMESTAMP
+}
+entity evidence {
+  * **id** : INTEGER <<PK>>
+  --
+  * evidence_code : VARCHAR(40) <<UNIQUE>>
+  * case_id : INTEGER <<FK>>
+  * original_filename : VARCHAR(255)
+  * stored_filename : VARCHAR(255) <<UNIQUE>>
+  mime_type : VARCHAR(120)
+  * size_bytes : BIGINT
+  * sha256 : CHAR(64)
+  description : TEXT
+  * uploaded_by_id : INTEGER <<FK>>
+  * custodian_id : INTEGER <<FK>>
+  * integrity_status : VARCHAR(20)
+  last_verified_at : TIMESTAMP
+  * created_at : TIMESTAMP
+}
+entity custody_events {
+  * **id** : INTEGER <<PK>>
+  --
+  * timestamp : TIMESTAMP
+  user_id : INTEGER <<FK>>
+  * action : VARCHAR(30)
+  evidence_id : INTEGER <<FK>>
+  case_id : INTEGER <<FK>>
+  * details : TEXT
+  ip_address : VARCHAR(45)
+  * prev_hash : CHAR(64)
+  * entry_hash : CHAR(64) <<UNIQUE>>
+}
+entity transfers {
+  * **id** : INTEGER <<PK>>
+  --
+  * evidence_id : INTEGER <<FK>>
+  * from_user_id : INTEGER <<FK>>
+  * to_user_id : INTEGER <<FK>>
+  * reason : TEXT
+  * status : VARCHAR(20)
+  * requested_at : TIMESTAMP
+  responded_at : TIMESTAMP
+  response_note : TEXT
+}
+entity alerts {
+  * **id** : INTEGER <<PK>>
+  --
+  * rule : VARCHAR(40)
+  * severity : VARCHAR(10)
+  * message : TEXT
+  evidence_id : INTEGER <<FK>>
+  user_id : INTEGER <<FK>>
+  * created_at : TIMESTAMP
+  acknowledged_by_id : INTEGER <<FK>>
+  acknowledged_at : TIMESTAMP
+}
+users ||--o{ cases : leads
+cases ||--o{ evidence : contains
+users ||--o{ evidence : "custodian"
+evidence ||--o{ transfers : has
+users ||--o{ transfers : "from / to"
+evidence |o--o{ custody_events : "logged for"
+users |o--o{ custody_events : performs
+evidence |o--o{ alerts : about
+users |o--o{ alerts : "raised for / ack by"
+@enduml

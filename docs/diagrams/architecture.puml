@@ -1,0 +1,63 @@
+@startuml
+!include style.iuml
+skinparam componentBorderColor #1f3b5c
+skinparam componentBackgroundColor #eef3f9
+skinparam packageBorderColor #1f3b5c
+title 3-Tier Layered Architecture
+package "Tier 1 - Presentation (Browser)" #f0f4fa {
+  [HTML pages\nJinja2 + Bootstrap 5] as UI
+}
+package "Tier 2 - Application (Flask server)" #fdf6ec {
+  package "Boundary: Blueprints / routes" {
+    [Auth] as R1
+    [Cases] as R2
+    [Evidence] as R3
+    [Transfers] as R4
+    [Alerts + Audit] as R5
+    [Admin] as R6
+  }
+  package "Control: Services" {
+    [EvidenceService] as S1
+    [HashService] as S2
+    [AuditService\n(hash chain)] as S3
+    [TransferService] as S4
+    [IntegrityService\n+ Scheduler] as S5
+    [AnomalyService] as S6
+    [ReportService\n(ReportLab PDF)] as S7
+  }
+  [SQLAlchemy models (Entity)] as M
+  [Flask-Login + CSRF + role checks] as SEC
+}
+package "Tier 3 - Data" #eef7ee {
+  database "Relational DB\n(PostgreSQL / SQLite)" as DB
+  folder "Evidence store\n(read-only files)" as FS
+}
+UI --> R1 : HTTPS
+UI --> R2
+UI --> R3
+UI --> R4
+UI --> R5
+UI --> R6
+R1 ..> SEC
+R2 --> S1
+R3 --> S1
+R3 --> S5
+R3 --> S7
+R4 --> S4
+R5 --> S3
+R6 --> S3
+S1 --> S2
+S5 --> S2
+S1 --> S3
+S4 --> S3
+S5 --> S3
+S3 --> S6
+S1 --> M
+S3 --> M
+S4 --> M
+S5 --> M
+S6 --> M
+M --> DB
+S1 --> FS
+S5 --> FS
+@enduml
