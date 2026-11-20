@@ -8,8 +8,6 @@ Instructor: Dr. Murad Al-Rajab
 | Name | Student ID | Main responsibility |
 |---|---|---|
 | Mohammed AlHammadi | 1094614 | Back end: authentication, hashing, audit log, database |
-| Fahad Almazrouei | 1091246 | Front end: pages, PDF report, UI mockups |
-| Salem Alshehyari | 1092688 | Analysis, anomaly rules, testing, documentation |
 
 ## Problem
 
